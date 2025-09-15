@@ -1,0 +1,72 @@
+[
+  {
+    "objectID": "programming.html",
+    "href": "programming.html",
+    "title": "Posts in Programming",
+    "section": "",
+    "text": "Order By\n      Default\n      \n        Date - Oldest\n      \n      \n        Date - Newest\n      \n      \n        Title\n      \n    \n  \n    \n      \n      \n    \n\n\n\n\nTitle\nDate\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "math.html",
+    "href": "math.html",
+    "title": "Posts in Image Math",
+    "section": "",
+    "text": "Order By\n      Default\n      \n        Date - Oldest\n      \n      \n        Date - Newest\n      \n      \n        Title\n      \n    \n  \n    \n      \n      \n    \n\n\n\n\nTitle\nDate\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "image-analysis.html",
+    "href": "image-analysis.html",
+    "title": "Posts in Image Analysis",
+    "section": "",
+    "text": "Order By\n      Default\n      \n        Date - Oldest\n      \n      \n        Date - Newest\n      \n      \n        Title\n      \n    \n  \n    \n      \n      \n    \n\n\n\n\nTitle\nDate\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "all.html",
+    "href": "all.html",
+    "title": "Browse by Topic",
+    "section": "",
+    "text": "Order By\n      Default\n      \n        Date - Oldest\n      \n      \n        Date - Newest\n      \n      \n        Title\n      \n    \n  \n    \n      \n      \n    \n\n\n\n\n\n\nTitle\n\n\n\nDate\n\n\n\n\n\n\n\n\nQuarto Cheat Sheet\n\n\nSep 15, 2025\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "EdwinBennink.github.io",
+    "section": "",
+    "text": "This website shares notes and reflections on (medical) image analysis, programming, and mathematics."
+  },
+  {
+    "objectID": "index.html#about-the-author",
+    "href": "index.html#about-the-author",
+    "title": "EdwinBennink.github.io",
+    "section": "About the author",
+    "text": "About the author\nEdwin Bennink works as a researcher and research software engineer for the Medical Physics Group and the Image Sciences Institute (UMC Utrecht - Dept. of Radiology).\nHe received the MSc degree (cum laude) in biomedical engineering from the Eindhoven University of Technology in 2007. In 2016, he received his PhD from the Utrecht University, with a research project on quantitative CT brain perfusion analysis. From 2007 to 2011 he worked as senior software developer for Scientific Volume Imaging BV.\nBesides doing research in CT imaging in acute stroke and supporting various image-analysis related projects throughout the UMC Utrecht, Edwin is one of the lead developers of IMAGR, the image analytics infrastructure that brings deep-learning algorithms into the clinical workflow."
+  },
+  {
+    "objectID": "posts/cheat-sheet.html",
+    "href": "posts/cheat-sheet.html",
+    "title": "Quarto Cheat Sheet",
+    "section": "",
+    "text": "This static website is generated using Quarto, which allows creating dynamic content with Python, and writing markdown, including equations, citations, crossrefs, figure panels, etc.\nThis document is used as a Quarto cheat sheet."
+  },
+  {
+    "objectID": "posts/cheat-sheet.html#a-latex-equation",
+    "href": "posts/cheat-sheet.html#a-latex-equation",
+    "title": "Quarto Cheat Sheet",
+    "section": "1. A \\(\\LaTeX\\) Equation",
+    "text": "1. A \\(\\LaTeX\\) Equation\n\\[g(x) = \\frac{1}{\\sqrt{2\\pi\\sigma^2}}e^{-\\frac{1}{2}(x-\\mu)^2/\\sigma^2}\\]"
+  },
+  {
+    "objectID": "posts/cheat-sheet.html#interactive-plotly-plot-with-sliders",
+    "href": "posts/cheat-sheet.html#interactive-plotly-plot-with-sliders",
+    "title": "Quarto Cheat Sheet",
+    "section": "2. Interactive Plotly Plot with Sliders",
+    "text": "2. Interactive Plotly Plot with Sliders\n\n\nCode\nimport numpy as np\nimport plotly.graph_objects as go\n\nx = np.arange(0, 10, 0.01)\nn = 51  # Number of traces\nactive = 10  # Initially active slider step\nsteps = []  # Slider steps\n\n# Create a figure and a trace for each slider step.\nfig = go.Figure()\nfor i, f in enumerate(np.linspace(0, 5, n)):\n    trace = go.Scatter(x=x, y=np.sin(f * x), visible=(i == active), name=\"f = \" + str(f))\n    fig.add_trace(trace)\n    \n    steps.append({\n        \"method\": \"update\",\n        \"label\": f\"{f:.2f}\",  # This is the label the slider shows.\n        \"args\": [{\"visible\": [i == j for j in range(n)]}],  # i-th trace is visible in this step.\n    })\n\nsliders = [{\n    \"active\": active,  # Initially active step.\n    \"currentvalue\": {\"prefix\": \"Frequency: \"},  # Slider info text configuration.\n    \"steps\": steps\n}]\n\nfig.update_layout(\n    sliders=sliders,\n    template=\"seaborn\"\n)\nfig.update_yaxes(range=[-1.1, 1.1])  # y-axis are automatically resized otherwise.\n\nfig.show()"
+  },
+  {
+    "objectID": "posts/cheat-sheet.html#interactive-image-hover",
+    "href": "posts/cheat-sheet.html#interactive-image-hover",
+    "title": "Quarto Cheat Sheet",
+    "section": "3. Interactive Image Hover",
+    "text": "3. Interactive Image Hover\n\n\nCode\nimport numpy as np\nimport plotly.express as px\n\n# Create a 16x16 RGB image\nimg = np.random.rand(16, 16, 3)\nmagnitude = np.linalg.norm(img, axis=2)\n\nfig = px.imshow(magnitude, color_continuous_scale=\"Viridis\", title=\"Hover me\")\nfig.update_traces(\n    hovertemplate=\"Coord: (%{x}, %{y})&lt;br&gt;Value: (%{customdata[0]:.3f}, %{customdata[1]:.3f}, %{customdata[2]:.3f})&lt;extra&gt;&lt;/extra&gt;\",\n    customdata=img\n)\nfig.show()"
+  }
+]

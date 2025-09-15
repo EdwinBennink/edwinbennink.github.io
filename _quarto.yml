@@ -1,0 +1,26 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "EdwinBennink.github.io"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: all.qmd
+        text: All Categories
+      - href: image-analysis.qmd
+        text: Image Analysis
+      - href: math.qmd
+        text: Math
+      - href: programming.qmd
+        text: Programming
+
+format:
+  html:
+    theme:
+      - sandstone
+      - brand
+    css: styles.css
+    toc: true

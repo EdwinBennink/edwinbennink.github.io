@@ -1,0 +1,9 @@
+---
+title: "Posts in Image Math"
+listing:
+  contents: posts
+  type: table
+  fields: [title, date]
+  include:
+    categories: math
+---

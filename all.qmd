@@ -1,0 +1,8 @@
+---
+title: "Browse by Topic"
+listing: 
+  contents: posts
+  type: table
+  fields: [title, date]
+  categories: true
+---

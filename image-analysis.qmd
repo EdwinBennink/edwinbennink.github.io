@@ -1,0 +1,9 @@
+---
+title: "Posts in Image Analysis"
+listing:
+  contents: posts
+  type: table
+  fields: [title, date]
+  include:
+    categories: image-analysis
+---

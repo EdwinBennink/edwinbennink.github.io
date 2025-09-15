@@ -1,0 +1,77 @@
+---
+title: "Quarto Cheat Sheet"
+format:
+  html:
+    code-fold: true
+jupyter: python3
+tags: [quarto, plotly]
+date: 15 09 2025
+---
+
+This static website is generated using [Quarto](https://quarto.org/), which allows creating
+dynamic content with Python, and writing markdown, including equations, citations, crossrefs,
+figure panels, etc.
+
+This document is used as a Quarto cheat sheet.
+
+## 1. A $\LaTeX$ Equation
+
+$$g(x) = \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{1}{2}(x-\mu)^2/\sigma^2}$$
+
+---
+
+## 2. Interactive Plotly Plot with Sliders
+
+```{python}
+import numpy as np
+import plotly.graph_objects as go
+
+x = np.arange(0, 10, 0.01)
+n = 51  # Number of traces
+active = 10  # Initially active slider step
+steps = []  # Slider steps
+
+# Create a figure and a trace for each slider step.
+fig = go.Figure()
+for i, f in enumerate(np.linspace(0, 5, n)):
+    trace = go.Scatter(x=x, y=np.sin(f * x), visible=(i == active), name="f = " + str(f))
+    fig.add_trace(trace)
+	
+    steps.append({
+        "method": "update",
+		"label": f"{f:.2f}",  # This is the label the slider shows.
+        "args": [{"visible": [i == j for j in range(n)]}],  # i-th trace is visible in this step.
+    })
+
+sliders = [{
+    "active": active,  # Initially active step.
+    "currentvalue": {"prefix": "Frequency: "},  # Slider info text configuration.
+    "steps": steps
+}]
+
+fig.update_layout(
+    sliders=sliders,
+	template="seaborn"
+)
+fig.update_yaxes(range=[-1.1, 1.1])  # y-axis are automatically resized otherwise.
+
+fig.show()
+```
+
+## 3. Interactive Image Hover
+
+```{python}
+import numpy as np
+import plotly.express as px
+
+# Create a 16x16 RGB image
+img = np.random.rand(16, 16, 3)
+magnitude = np.linalg.norm(img, axis=2)
+
+fig = px.imshow(magnitude, color_continuous_scale="Viridis", title="Hover me")
+fig.update_traces(
+    hovertemplate="Coord: (%{x}, %{y})<br>Value: (%{customdata[0]:.3f}, %{customdata[1]:.3f}, %{customdata[2]:.3f})<extra></extra>",
+    customdata=img
+)
+fig.show()
+```

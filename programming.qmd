@@ -1,0 +1,9 @@
+---
+title: "Posts in Programming"
+listing:
+  contents: posts
+  type: table
+  fields: [title, date]
+  include:
+    categories: math
+---

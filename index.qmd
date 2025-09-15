@@ -1,0 +1,18 @@
+---
+title: "EdwinBennink.github.io"
+---
+
+This website shares notes and reflections on (medical) image analysis, programming, and mathematics.
+
+## About the author
+Edwin Bennink works as a researcher and research software engineer for the Medical Physics Group
+and the Image Sciences Institute (UMC Utrecht - Dept. of Radiology).
+
+He received the MSc degree (cum laude) in biomedical engineering from the Eindhoven University of
+Technology in 2007. In 2016, he received his PhD from the Utrecht University, with a research
+project on quantitative CT brain perfusion analysis. From 2007 to 2011 he worked as senior software
+developer for Scientific Volume Imaging BV.
+
+Besides doing research in CT imaging in acute stroke and supporting various image-analysis related
+projects throughout the UMC Utrecht, Edwin is one of the lead developers of IMAGR, the image
+analytics infrastructure that brings deep-learning algorithms into the clinical workflow.

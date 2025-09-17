@@ -1,0 +1,175 @@
+---
+title: "Newton's Root-Finding Method"
+format:
+  html:
+    code-fold: true
+jupyter: python3
+tags: [programming, math]
+date: 17 09 2025
+---
+
+At the core of many research software applications you'll find optimization functions. Sometimes,
+the optimization task is complex and thus requires a complex optimization routine. In other
+cases, however, simpler and more elegant methods exist and complex optimization routines might
+introduce more overhead than necessary.
+
+In this post, I'll show how Newton's method can be helpful in finding a root of an n<sup>th</sup>
+order polynomial, when a close approximation is known. Newton's method is simple (it requires just a
+few lines of code) and fast (the rate of convergence is at least quadratic). I recently used it for
+diffusion MRI software, so I'll use that as an example.
+
+In diffusion MRI, the [b-value](https://mriquestions.com/what-is-the-b-value.html) for trapezoidal
+gradient pulses is given by
+$$b = \gamma^2G^2\left(\delta^2\left(\Delta - \frac{1}{3}\delta\right) + \frac{1}{30}\xi^2 - \frac{1}{6}\delta\xi^2\right),$$
+where $\xi$ is the rise time $G/s_{max}$.
+
+In order to calculate the gradient magnitude $G$ for a given $\gamma$, $s_{max}$, $b$, $\delta$, and
+$\Delta$, we need to find the root for
+$$0 = \left(\frac{\gamma^2}{30s_{max}^2}\right)G^5 - \left(\frac{\gamma^2\delta}{6s_{max}²}\right)G^4 + \gamma^2\delta^2\left(\Delta - \frac{1}{3}\delta\right)G^2 - b\label{eq:1}$$ {#eq-1}
+
+Since we know that the term for $G^5$ is significantly smaller than the others, we can use the
+solution to
+$$0 = -\left(\frac{\gamma^2\delta}{6s_{max}²}\right)\tilde{G}^4 + \gamma^2\delta^2\left(\Delta - \frac{1}{3}\delta\right)\tilde{G}^2 - b$$
+as an initial guess. Solving this quadratic equation for $\tilde{G}^2$ gives $\tilde{G}^2 = (\sqrt{c_2^2 + 4 c_4 b} - c_2) / (2 c_4)$,
+where $c_2$ and $c_4$ are the 2<sup>nd</sup> and 4<sup>th</sup> order coefficients in @eq-1.
+
+Now we have coarse approximation to the value for $G$ for which @eq-1 is zero, we can use Newton's
+method to approximate it to the required precision.
+
+First we need a function to evaluate a polynomial given an array of coefficients:
+
+```{python}
+#| code-fold: false
+import numpy as np
+
+def eval_polynomial(c, x):
+    """
+    Evaluates the polynomial y = c[0] + c[1] x + c[2] x² + ...
+
+     :param c: List of coefficients or coefficient vectors.
+     :param x: x
+     :return: y
+    """
+    y = 0
+    xp = 1
+    
+    for coefficients in c:
+        y += coefficients * xp  # Add the term c[i] * x^i
+        xp *= x  # Calculate x^(i+1)
+
+    return y
+```
+
+Then we can implement the actual root-finding method like this:
+
+```{python}
+#| code-fold: false
+def newtons_method(c, x0, n):
+    """
+    Uses Newton's method to find a root of a polynomial with coefficients c, starting at x = x0:
+     0 = c[0] + c[1] x + c[2] x² + ...
+
+     :param c: List of coefficients or coefficient vectors.
+     :param x0: Initial guess.
+     :param n: Number of iterations.
+     :return: Result of Newton's method after n iterations.
+    """
+    # Calculate the coefficients for the derivative of the polynomial.
+    d = [i * coef for i, coef in enumerate(c[1:], 1)]
+
+    x = np.array(x0)  # Makes a copy
+    for _ in range(n):  # Perform n iterations.
+        y = eval_polynomial(c, x)  # Evaluate the polynomial for x.
+        dy = eval_polynomial(d, x)  # Evaluate its derivative for x.
+        nonzero = dy != 0  # Prevent division by zero.
+        x[nonzero] -= y[nonzero] / dy[nonzero]
+
+    return x
+```
+
+Now we can calculate the initial estimate $\tilde{G}$ and a precise value for $G$ as follows:
+
+```{python}
+#| code-fold: false
+# Acquisition parameters for which to calculate G.
+b = 750  # s/mm²
+γ = 267598.7  # 1/mT/s
+δ = 0.002  # s
+Δ = 0.02 # s
+s_max = 50  # mT/mm/s
+
+# Calculate the polynomial coefficients.
+c5 = γ ** 2 / (30 * s_max ** 3)
+c4 = -γ ** 2 * δ / (6 * s_max ** 2)
+c2 = (γ * δ) ** 2 * (Δ - δ / 3)
+c0 = -b
+c = [c0, 0, c2, 0, c4, c5]
+
+x0 = np.sqrt((np.sqrt(c2 ** 2 + 4 * c4 * b) - c2) / (2 * c4))  # Initial estimate for G.
+g = newtons_method(c, x0, 5)  # Precise estimate for G, after 5 iterations.
+
+y0 = eval_polynomial(c, x0)
+y = eval_polynomial(c, g)
+print(f"Value at initial estimate G={x0:.6f}: {y0:.3f}")
+print(f"Value at precise estimate G={g:.6f}: {y:.3f}")
+```
+
+The plot below shows the estimate for $G$ in each iteration. Note that the estimate for $G$ is at
+the intersection of the derivative with $y=0$ in the previous iteration.
+
+```{python}
+import plotly.graph_objects as go
+
+# Calculate the coefficients for the derivative of the polynomial.
+d = [i * coef for i, coef in enumerate(c[1:], 1)]
+
+
+x = np.linspace(0.35, 0.5, 200)
+n = 6  # Number of iterations
+active = 0  # Initially active slider step
+steps = []  # Slider steps
+
+fig = go.Figure()
+fig.add_hline(y=0, line={"color": "black", "width": 1})
+
+trace = go.Scatter(x=x, y=eval_polynomial(c, x), visible=True, name="5th order")
+fig.add_trace(trace)
+trace = go.Scatter(x=x, y=eval_polynomial([c0, 0, c2, 0, c4, 0], x), visible=True, name="approximation")
+fig.add_trace(trace)
+	
+# Create a figure and a trace for each slider step.
+for i in range(n):
+    g = newtons_method(c, [x0], i)
+    y = eval_polynomial(c, g)  # Evaluate the polynomial for g.
+    trace = go.Scatter(mode='markers', marker={"size": 8, "symbol": "circle", "color": "black"},
+                       x=g, y=y, visible=(i == active), name="estimated root")
+    fig.add_trace(trace)
+	
+    dy = eval_polynomial(d, g)  # Evaluate its derivative for g.
+    trace = go.Scatter(mode='lines', line={"color": "black", "width": 1, "dash": "dash"},
+                       x=[x[0], x[-1]],
+                       y=[dy[0] * (x[0] - g[0]) + y[0], dy[0] * (x[-1] - g[0]) + y[0]],
+                       visible=(i == active), name="derivative at estimation")
+    fig.add_trace(trace)
+	
+    steps.append({
+        "method": "update",
+        "label": str(i),  # This is the label the slider shows.
+        "args": [{"visible": [True, True] + [i == j//2 for j in range(2*n)]}],  # i-th trace is visible in this step.
+    })
+
+sliders = [{
+    "active": active,  # Initially active step.
+    "currentvalue": {"prefix": "Iterations: "},  # Slider info text configuration.
+    "steps": steps
+}]
+
+fig.update_layout(
+    sliders=sliders,
+    template="seaborn",
+    xaxis={"title": {"text": "G (mT/mm)"}},
+)
+fig.update_yaxes(range=[-250, 650])  # y-axis are automatically resized otherwise.
+
+fig.show()
+```

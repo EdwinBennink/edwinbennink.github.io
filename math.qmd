@@ -5,5 +5,5 @@ listing:
   type: table
   fields: [title, date]
   include:
-    categories: math
+    tags: math
 ---

@@ -168,6 +168,7 @@ fig.update_layout(
     sliders=sliders,
     template="seaborn",
     xaxis={"title": {"text": "G (mT/mm)"}},
+    legend={"x": 0.02, "y": 0.98},
 )
 fig.update_yaxes(range=[-250, 650])  # y-axis are automatically resized otherwise.
 

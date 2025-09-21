@@ -2,24 +2,28 @@
   {
     "listing": "/programming.html",
     "items": [
+      "/posts/convolution-contiguous-access-vectorization.html",
       "/posts/newtons-method.html"
     ]
-  },
-  {
-    "listing": "/all.html",
-    "items": [
-      "/posts/newtons-method.html",
-      "/posts/cheat-sheet.html"
-    ]
-  },
-  {
-    "listing": "/image-analysis.html",
-    "items": []
   },
   {
     "listing": "/math.html",
     "items": [
       "/posts/newtons-method.html"
+    ]
+  },
+  {
+    "listing": "/image-analysis.html",
+    "items": [
+      "/posts/convolution-contiguous-access-vectorization.html"
+    ]
+  },
+  {
+    "listing": "/all.html",
+    "items": [
+      "/posts/convolution-contiguous-access-vectorization.html",
+      "/posts/newtons-method.html",
+      "/posts/cheat-sheet.html"
     ]
   }
 ]

@@ -1,0 +1,89 @@
+---
+title: "Convolution, Contiguous Access, and Vectorization"
+format:
+  html:
+    code-fold: true
+tags: [programming, image-analysis]
+date: 21 09 2025
+---
+
+In programming, it is well understood that accessing memory contiguously is faster than strided or
+random access. The reason for this is that data is transferred in contiguous chunks, or cache lines,
+between main memory, CPU cache, and registers. This is why image-processing algorithms typically
+place the horizontal axis in the inner loop: pixels along that axis are adjacent in memory.
+
+Many image-processing algorithms use [convolution](https://en.wikipedia.org/wiki/Convolution#Discrete_convolution),
+where a kernel is applied to each pixel by iterating over its neighborhood. For a 2D image and
+kernel, this requires four nested for-loops. This is the textbook order:
+
+```
+for y in image:
+    for x in image row:
+	    for v in kernel:
+		    for u in kernel row:
+				output[x, y] += kernel[u, v] * image[x + u, y + v]
+```
+
+This is obviously better than first iterating over x and then over y. But we can do better! Since
+the image is generally larger than the kernel, it is more efficient to place the image's x-axis in
+the innermost for-loop:
+
+```
+for y in image:
+	for v in kernel:
+		for u in kernel row:
+			for x in image row:
+				output[x, y] += kernel[u, v] * image[x + u, y + v]
+```
+
+This ordering improves contiguous read/write access and makes better use of the (prefetched) cache
+lines. But there's another (and perhaps bigger) advantage to this ordering: it allows for efficient
+[vectorization](https://cvw.cac.cornell.edu/vector/hardware/registers).
+
+Modern CPU's can do vector-operations, which means a single core can do e.g. 4 or 8 additions,
+multiplications or other simple instructions at once. Note that vectorization (a *Single Instruction
+Mulitple Data* technique) is different from multi-core parallelization (*Multiple Instruction
+Multiple Data*). Both these techniques can complement eachother.
+
+Many compilers have an [auto-vectorization](https://en.wikipedia.org/wiki/Automatic_vectorization)
+option which is turned off by default, because it is not compatible with older CPU's. In GCC, you
+can turn it on using the `-ftree-vectorize` flag. The AVX instruction set is enabled using the
+`-mavx` flag.
+
+In the tables below I listed the processing times for different orderings and compiler options.
+Without vectorization, the more contiguous {y, v, u, x} ordering is 1.5x as fast as the default
+{y, x, v, u} ordering. With vectorization, it is 3x (SSE) to 8x (AVX) as fast. That's considerable!
+It can also be seen that a transposed {x, y, v, u} ordering is just a little slower when the image
+is small (1 MiB) and fits in the CPU cache. But when the image is larger (16 MiB), cache misses due
+to strided iteration become prominent.
+
+| Vectorization |    x,y,v,u | y,x,v,u |    y,v,u,x |
+|--------------:|-----------:|--------:|-----------:|
+|          None |        2.8 |     1.6 |        1.1 |
+|           SSE |        2.9 |     1.6 |        0.5 |
+|           AVX |        2.9 |     1.9 |        0.2 |
+: Processing time in milliseconds for a small 3×3 kernel and small 512×512 image. {.striped .hover}
+
+| Vectorization |    x,y,v,u | y,x,v,u |    y,v,u,x |
+|--------------:|-----------:|--------:|-----------:|
+|          None |       20.8 |    20.3 |       14.1 |
+|           SSE |       20.8 |    20.3 |        5.8 |
+|           AVX |       21.2 |    21.6 |        2.6 |
+: Processing time in milliseconds for a large 11×11 kernel and small 512×512 image. {.striped .hover}
+
+| Vectorization |    x,y,v,u | y,x,v,u |    y,v,u,x |
+|--------------:|-----------:|--------:|-----------:|
+|          None |      131.1 |    26.0 |       17.4 |
+|           SSE |      127.8 |    26.2 |        8.5 |
+|           AVX |      128.8 |    31.3 |        3.6 |
+: Processing time in milliseconds for a small 3×3 kernel and large 512×8192 image. {.striped .hover}
+
+This is the C-code that was used to measure these timings.
+<details> 
+<summary>Code</summary>
+```c
+{{< include ../src/convolution.c >}}
+```
+</details>
+
+Key takeaway: *the order of iteration matters, and vectorization brings significant benefits.*
